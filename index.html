@@ -24,7 +24,8 @@ async function search() {
     const resultsDiv = document.getElementById("results");
     resultsDiv.innerHTML = "Suche…";
 
-    const proxy = "https://corsproxy.io/?";
+    const proxy = "https://api.allorigins.win/raw?url=";
+
 
     // 1. Bahnhof suchen
     const stationRes = await fetch(proxy + `https://v6.transport.rest/locations?query=${encodeURIComponent(query)}&results=5`);
