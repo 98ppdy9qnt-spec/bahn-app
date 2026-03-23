@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Direktverbindungen Finder</title>
+<style>
+    body { font-family: Arial; max-width: 600px; margin: 40px auto; }
+    input, button { padding: 10px; font-size: 16px; }
+    .result { margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<h2>🚆 Direktverbindungen ab Bahnhof</h2>
+
+<input id="stationInput" placeholder="Bahnhof eingeben (z.B. Berlin Hbf)">
+<button onclick="search()">Suchen</button>
+
+<div id="results" class="result"></div>
+
+<script>
+async function search() {
+    const query = document.getElementById("stationInput").value;
+    const resultsDiv = document.getElementById("results");
+    resultsDiv.innerHTML = "Suche…";
+
+    // 1. Bahnhof suchen
+    const stationRes = await fetch(`https://v6.transport.rest/locations?query=${encodeURIComponent(query)}&results=5`);
+    const stations = await stationRes.json();
+
+    if (!stations.length) {
+        resultsDiv.innerHTML = "Kein Bahnhof gefunden.";
+        return;
+    }
+
+    const station = stations[0];
+    const stationId = station.id;
+
+    // 2. Abfahrten abrufen
+    const depRes = await fetch(`https://v6.transport.rest/stops/${stationId}/departures?duration=120&linesOfStops=true`);
+    const departures = await depRes.json();
+
+    if (!departures.length) {
+        resultsDiv.innerHTML = "Keine Abfahrten gefunden.";
+        return;
+    }
+
+    // 3. Direktverbindungen filtern
+    const direct = departures.filter(d => d.stopovers && d.stopovers.length === 2);
+
+    // 4. Ausgabe
+    resultsDiv.innerHTML = `<h3>Direktverbindungen ab ${station.name}:</h3>`;
+
+    if (!direct.length) {
+        resultsDiv.innerHTML += "Keine Direktverbindungen gefunden.";
+        return;
+    }
+
+    direct.forEach(d => {
+        const dest = d.destination?.name || "Unbekannt";
+        const time = new Date(d.when).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+        const line = d.line?.name || "Unbekannt";
+
+        resultsDiv.innerHTML += `
+            <div>
+                <strong>${time}</strong> → ${dest} (${line})
+            </div>
+        `;
+    });
+}
+</script>
+
+</body>
+</html>
