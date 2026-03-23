@@ -1,35 +1,11 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<title>Direktverbindungen Finder</title>
-<style>
-    body { font-family: Arial; max-width: 600px; margin: 40px auto; }
-    input, button { padding: 10px; font-size: 16px; }
-    .result { margin-top: 20px; }
-</style>
-</head>
-<body>
-
-<h2>🚆 Direktverbindungen ab Bahnhof</h2>
-
-<input id="stationInput" placeholder="Bahnhof eingeben (z.B. München)">
-<button onclick="search()">Suchen</button>
-
-<div id="results" class="result"></div>
-
 <script>
 async function search() {
     const query = document.getElementById("stationInput").value;
     const resultsDiv = document.getElementById("results");
     resultsDiv.innerHTML = "Suche…";
 
-    const proxy = "https://thingproxy.freeboard.io/fetch/";
-
-
-
     // 1. Bahnhof suchen
-    const stationRes = await fetch(proxy + `https://v6.transport.rest/locations?query=${encodeURIComponent(query)}&results=5`);
+    const stationRes = await fetch(`https://v5.db.transport.rest/locations?query=${encodeURIComponent(query)}&results=5`);
     const stations = await stationRes.json();
 
     if (!stations.length) {
@@ -41,7 +17,7 @@ async function search() {
     const stationId = station.id;
 
     // 2. Abfahrten abrufen
-    const depRes = await fetch(proxy + `https://v6.transport.rest/stops/${stationId}/departures?duration=120&linesOfStops=true`);
+    const depRes = await fetch(`https://v5.db.transport.rest/stops/${stationId}/departures?duration=120&linesOfStops=true`);
     const departures = await depRes.json();
 
     if (!departures.length) {
@@ -73,6 +49,3 @@ async function search() {
     });
 }
 </script>
-
-</body>
-</html>
